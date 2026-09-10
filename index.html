@@ -79,6 +79,11 @@
           <span>Tableau de Bord</span>
         </button>
 
+        <button data-tab-target="quiz" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+          <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+          <span>Grand Bilan John Gray</span>
+        </button>
+
         <button data-tab-target="codex" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
           <i data-lucide="book-marked" class="w-4 h-4"></i>
           <span>Codex du Livre</span>
@@ -151,7 +156,43 @@
   </header>
 
   <!-- Contenu Principal -->
-  <main class="flex-1 p-4 sm:p-8 md:p-10 max-w-6xl mx-auto overflow-y-auto w-full">
+  <main class="flex-1 p-4 sm:p-8 md:p-10 max-w-6xl mx-auto overflow-y-auto w-full space-y-6">
+
+    <!-- Barre d'actions supérieures (Recherche universelle + SOS + Coffre) -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-3xl border border-gray-100 shadow-sm relative no-print">
+      <div class="relative flex-1">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+        <input 
+          type="text" 
+          id="global-search-input" 
+          placeholder="Rechercher dans le livre, les 10 réservoirs, les 12 blocages..." 
+          class="w-full pl-10 pr-4 py-2 text-xs rounded-2xl border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-smooth"
+        />
+        <!-- Résultats de recherche instantanée -->
+        <div id="search-results-box" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-xl z-50 overflow-hidden max-h-80 overflow-y-auto p-1">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Bouton SOS Urgence Émotionnelle -->
+        <button 
+          id="sos-open-btn" 
+          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-xs font-bold transition-smooth flex items-center gap-1.5 shadow-sm sos-pulse-active"
+        >
+          <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+          <span>SOS Émotions</span>
+        </button>
+
+        <!-- Bouton Coffre-Fort / PIN -->
+        <button 
+          id="vault-lock-toggle-btn" 
+          class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl text-xs font-semibold transition-smooth flex items-center gap-1.5"
+          title="Verrouiller/Déverrouiller mes écrits avec un code PIN"
+        >
+          <span id="vault-lock-indicator"><i data-lucide="unlock" class="w-4 h-4 text-emerald-600"></i></span>
+        </button>
+      </div>
+    </div>
 
     <!-- Onglet 1 : Tableau de bord (Dashboard) -->
     <section data-tab-content="dashboard" class="space-y-8">
@@ -169,7 +210,15 @@
       </div>
 
       <!-- Statistiques d'Harmonie & Accès Rapides -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div class="p-4 sm:p-5 bg-white rounded-3xl border border-gray-100 shadow-sm col-span-2 sm:col-span-1">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-1">
+            <span>Série Harmonie</span>
+            <span class="text-amber-500">🔥</span>
+          </div>
+          <div id="dash-streak-count" class="text-xl sm:text-2xl font-bold font-serif text-amber-900">1 j</div>
+          <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Jours consécutifs</p>
+        </div>
         <div class="p-4 sm:p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
           <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-1">
             <span>Harmonie</span>
@@ -241,6 +290,33 @@
             </p>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Onglet GRAND BILAN JOHN GRAY -->
+    <section data-tab-content="quiz" class="hidden space-y-8">
+      <div>
+        <div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-1">
+          <i data-lucide="clipboard-check" class="w-4 h-4"></i> Diagnostic Psychologique Complet
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Le Grand Bilan d'Harmonie Intérieure</h2>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+          Répondez spontanément aux 10 situations de vie ci-dessous. Notre algorithme évalue votre rapport au succès, calcule vos réservoirs critiques et identifie votre blocage émotionnel prioritaire.
+        </p>
+      </div>
+
+      <div id="quiz-questions-container" class="space-y-4">
+        <!-- Rempli dynamiquement -->
+      </div>
+
+      <div class="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h4 class="font-serif font-bold text-gray-900 text-base">Prêt(e) à révéler votre cartographie intérieure ?</h4>
+          <p class="text-xs text-gray-500 mt-0.5">Vos réponses sont traitées localement en toute confidentialité.</p>
+        </div>
+        <button id="submit-quiz-btn" class="px-8 py-3.5 bg-primary text-white rounded-2xl text-xs font-bold hover:bg-primary/90 transition-smooth shadow-md flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4"></i> Obtenir mon Bilan Complet
+        </button>
       </div>
     </section>
 
@@ -505,6 +581,25 @@
           </div>
         </div>
 
+        <!-- Ambiances Sonores Synthétisées (100% Hors-Ligne) -->
+        <div class="w-full p-4 rounded-2xl bg-gray-50 border border-gray-200/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2 text-gray-700">
+            <i data-lucide="music" class="w-4 h-4 text-primary"></i>
+            <span class="font-bold">Ambiance Sonore Méditative :</span>
+            <select id="soundscape-select" class="px-3 py-1.5 rounded-xl border border-gray-300 text-xs bg-white text-gray-800 outline-none">
+              <option value="none">Silence (Cloche seule)</option>
+              <option value="waves">Ressac des Vagues Océaniques</option>
+              <option value="rain">Pluie Douce Apaisante</option>
+              <option value="432hz">Fréquence Sacrée 432 Hz</option>
+              <option value="528hz">Fréquence Miracle 528 Hz (Amour)</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2 text-gray-500 w-full sm:w-auto">
+            <span class="text-[11px]">Volume :</span>
+            <input type="range" id="soundscape-volume" min="0" max="1" step="0.05" value="0.4" class="w-28 h-1.5 bg-gray-200 rounded-lg accent-primary" />
+          </div>
+        </div>
+
         <!-- Option Guidage Vocal (Voix Douce en Français) -->
         <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 px-4 py-2 rounded-xl">
           <input type="checkbox" id="med-voice-toggle" class="accent-primary cursor-pointer" checked />
@@ -600,6 +695,50 @@
       <span class="text-[10px] font-medium">Méditer</span>
     </button>
   </nav>
+
+  <!-- Modal SOS Urgence Émotionnelle -->
+  <div id="sos-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl border border-red-100">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div class="flex items-center gap-2 text-red-600 font-bold text-sm uppercase tracking-wider">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          <span>Kit de Secours Émotionnel Immédiat</span>
+        </div>
+        <button onclick="closeSosModal()" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Sélecteur d'urgence -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button onclick="loadSosProtocol('anger')" class="p-2.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-900 text-xs font-bold text-center transition-smooth">
+          Colère
+        </button>
+        <button onclick="loadSosProtocol('anxiety')" class="p-2.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold text-center transition-smooth">
+          Angoisse
+        </button>
+        <button onclick="loadSosProtocol('guilt')" class="p-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold text-center transition-smooth">
+          Culpabilité
+        </button>
+        <button onclick="loadSosProtocol('procrastination')" class="p-2.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-900 text-xs font-bold text-center transition-smooth">
+          Paralysie
+        </button>
+      </div>
+
+      <div id="sos-protocol-content">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Résultat Diagnostic -->
+  <div id="diagnostic-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] overflow-y-auto">
+      <div id="diagnostic-modal-content">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </div>
+  </div>
 
   <!-- Modal d'Installation PWA pour iOS Safari -->
   <div id="ios-install-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">

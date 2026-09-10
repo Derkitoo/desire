@@ -744,6 +744,13 @@ function setupNavigation() {
 }
 
 function switchTab(tabId) {
+  if (tabId === 'letters') {
+    const storedPin = localStorage.getItem('voie_interieure_pin');
+    if (storedPin && !isVaultUnlocked) {
+      openPinPromptModal();
+      if (!isVaultUnlocked) return;
+    }
+  }
   state.currentTab = tabId;
   document.querySelectorAll('[data-tab-content]').forEach(panel => {
     panel.classList.add('hidden');
@@ -1939,3 +1946,770 @@ function initBackupSystem() {
     };
   }
 }
+
+
+// ==========================================
+// MODULE 7 : GRAND BILAN DIAGNOSTIQUE JOHN GRAY
+// ==========================================
+const DIAGNOSTIC_QUESTIONS = [
+  {
+    id: 1,
+    category: "harmony",
+    question: "Lorsque vous pensez à vos accomplissements actuels, quel est votre ressenti prédominant ?",
+    options: [
+      { text: "Une fierté sereine et une profonde gratitude pour le chemin parcouru.", scoreType: "inner_success", value: 10 },
+      { text: "Une insatisfaction constante : j'ai l'impression de ne jamais en faire assez.", scoreType: "block_perfectionism", value: 10 },
+      { text: "Une angoisse de tout perdre du jour au lendemain.", scoreType: "block_anxiety", value: 10 },
+      { text: "De l'amertume : les autres réussissent mieux ou ont eu plus de chance.", scoreType: "block_blame", value: 10 }
+    ]
+  },
+  {
+    id: 2,
+    category: "tanks",
+    question: "Face à une journée de repos sans obligations professionnelles :",
+    options: [
+      { text: "Je savoure chaque instant de calme pour me ressourcer sans culpabilité.", scoreType: "tank_self", value: 10 },
+      { text: "Je tourne en rond, je me sens coupable de ne rien faire et je cherche du travail.", scoreType: "tank_self_empty", value: 10 },
+      { text: "Je m'ennuie profondément et j'ai besoin de distractions sur écran continues.", scoreType: "tank_spiritual_empty", value: 10 },
+      { text: "J'attends désespérément que mon conjoint ou un proche vienne m'occuper.", scoreType: "tank_romance_empty", value: 10 }
+    ]
+  },
+  {
+    id: 3,
+    category: "blocks",
+    question: "Quand un imprévu ou un échec contrarie vos projets :",
+    options: [
+      { text: "Je cherche immédiatement qui est le responsable de cette injustice.", scoreType: "block_blame", value: 10 },
+      { text: "Je me replie sur moi-même avec l'envie de tout abandonner.", scoreType: "block_depression", value: 10 },
+      { text: "Je repousse la décision au lendemain en espérant que la situation se règle seule.", scoreType: "block_procrastination", value: 10 },
+      { text: "J'accueille la déception, je respire et je cherche la leçon constructive.", scoreType: "inner_success", value: 10 }
+    ]
+  },
+  {
+    id: 4,
+    category: "tanks",
+    question: "Quelle est votre relation intime avec vos parents (ou leur souvenir) ?",
+    options: [
+      { text: "Une paix totale : je leur pardonne leurs maladresses et les remercie pour la vie.", scoreType: "tank_parents", value: 10 },
+      { text: "Une rancœur encore vive pour ce qu'ils n'ont pas su me donner.", scoreType: "tank_parents_empty", value: 10 },
+      { text: "Un besoin secret de leur prouver enfin que j'ai réussi.", scoreType: "tank_parents_empty", value: 10 },
+      { text: "Une indifférence froide de protection.", scoreType: "block_indifference", value: 10 }
+    ]
+  },
+  {
+    id: 5,
+    category: "blocks",
+    question: "Lorsque vous devez débuter un nouveau projet important :",
+    options: [
+      { text: "Je commence par de petits pas imparfaits avec enthousiasme.", scoreType: "inner_success", value: 10 },
+      { text: "Je prépare mille plans mais je ne me lance jamais par peur que ce ne soit pas parfait.", scoreType: "block_perfectionism", value: 10 },
+      { text: "Je me perds dans des détails futiles et je repousse le vrai travail.", scoreType: "block_procrastination", value: 10 },
+      { text: "Je me sens paralysé(e) par la peur du jugement d'autrui.", scoreType: "block_anxiety", value: 10 }
+    ]
+  },
+  {
+    id: 6,
+    category: "tanks",
+    question: "Dans votre relation amoureuse (ou votre vision du couple) :",
+    options: [
+      { text: "Je partage ma vulnérabilité sans attendre que mon partenaire règle mes vides intérieurs.", scoreType: "tank_romance", value: 10 },
+      { text: "J'attends souvent qu'il/elle devine mes besoins et je lui en veux en silence.", scoreType: "block_resentment", value: 10 },
+      { text: "J'ai l'impression de tout donner sans recevoir autant en retour.", scoreType: "tank_romance_empty", value: 10 },
+      { text: "Je préfère rester seul(e) car les relations finissent toujours par faire souffrir.", scoreType: "block_indifference", value: 10 }
+    ]
+  },
+  {
+    id: 7,
+    category: "harmony",
+    question: "Prenez-vous du temps chaque jour pour le recueillement ou la méditation ?",
+    options: [
+      { text: "Oui, c'est mon sanctuaire matinal indispensable.", scoreType: "tank_spiritual", value: 10 },
+      { text: "J'aimerais beaucoup, mais mon esprit est trop agité pour rester assis.", scoreType: "tank_spiritual_empty", value: 10 },
+      { text: "Non, je n'ai absolument pas le temps avec toutes mes urgences.", scoreType: "inner_low", value: 10 },
+      { text: "Je ne vois pas l'utilité pratique de méditer.", scoreType: "inner_low", value: 10 }
+    ]
+  },
+  {
+    id: 8,
+    category: "blocks",
+    question: "Quand vous commettez une erreur regrettable :",
+    options: [
+      { text: "Je me répète en boucle à quel point j'ai été nul(le) et indigne.", scoreType: "block_guilt", value: 10 },
+      { text: "Je cherche des excuses extérieures pour ne pas perdre la face.", scoreType: "block_blame", value: 10 },
+      { text: "Je m'apitoie sur mon sort en me disant que le sort s'acharne sur moi.", scoreType: "block_self_pity", value: 10 },
+      { text: "Je reconnais ma maladresse, je répare si possible et je me pardonne.", scoreType: "inner_success", value: 10 }
+    ]
+  },
+  {
+    id: 9,
+    category: "tanks",
+    question: "À quelle fréquence riez-vous aux éclats avec des amis ou des proches ?",
+    options: [
+      { text: "Très souvent, le rire et la détente font partie de mon hygiène de vie.", scoreType: "tank_family_friends", value: 10 },
+      { text: "Rarement, la vie actuelle est trop sérieuse et exigeante.", scoreType: "tank_family_friends_empty", value: 10 },
+      { text: "Je me sens souvent seul(e) et incompris(e) par mon entourage.", scoreType: "tank_family_friends_empty", value: 10 },
+      { text: "Je n'ai pas de vrais amis en qui avoir une totale confiance.", scoreType: "tank_family_friends_empty", value: 10 }
+    ]
+  },
+  {
+    id: 10,
+    category: "blocks",
+    question: "Sur le plan de votre mission et de vos choix de vie :",
+    options: [
+      { text: "Je sais précisément où je vais et ce qui donne du sens à mon existence.", scoreType: "tank_divine_purpose", value: 10 },
+      { text: "Je suis dans un brouillard complet : je ne sais plus du tout ce que je veux.", scoreType: "block_confusion", value: 10 },
+      { text: "J'hésite perpétuellement entre plusieurs chemins sans oser trancher.", scoreType: "block_indecision", value: 10 },
+      { text: "J'ai l'impression de vivre la vie que les autres ont choisie pour moi.", scoreType: "tank_divine_purpose_empty", value: 10 }
+    ]
+  }
+];
+
+function initDiagnosticQuiz() {
+  const container = document.getElementById('quiz-questions-container');
+  if (!container) return;
+
+  container.innerHTML = DIAGNOSTIC_QUESTIONS.map((q, idx) => `
+    <div class="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-primary">Question ${idx + 1} sur ${DIAGNOSTIC_QUESTIONS.length}</span>
+        <span class="text-[11px] text-gray-400 font-semibold">${q.category === 'harmony' ? 'Équilibre de Vie' : q.category === 'tanks' ? 'Réservoir d'Amour' : 'Blocage Émotionnel'}</span>
+      </div>
+      <h4 class="font-serif font-bold text-gray-900 text-base leading-snug">${q.question}</h4>
+      <div class="space-y-2 pt-1">
+        ${q.options.map((opt, oIdx) => `
+          <label class="flex items-start gap-3 p-3 rounded-2xl bg-gray-50/80 hover:bg-primary-light/40 border border-gray-200/60 hover:border-primary/40 cursor-pointer transition-smooth">
+            <input type="radio" name="quiz_q_${q.id}" value="${opt.scoreType}" class="accent-primary mt-1 shrink-0" />
+            <span class="text-xs text-gray-700 leading-relaxed font-medium">${opt.text}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const submitBtn = document.getElementById('submit-quiz-btn');
+  if (submitBtn) {
+    submitBtn.onclick = evaluateDiagnosticQuiz;
+  }
+}
+
+function evaluateDiagnosticQuiz() {
+  const answers = {};
+  let answeredCount = 0;
+
+  DIAGNOSTIC_QUESTIONS.forEach(q => {
+    const selected = document.querySelector(`input[name="quiz_q_${q.id}"]:checked`);
+    if (selected) {
+      answers[q.id] = selected.value;
+      answeredCount++;
+    }
+  });
+
+  if (answeredCount < DIAGNOSTIC_QUESTIONS.length) {
+    alert(`Veuillez répondre à l'ensemble des ${DIAGNOSTIC_QUESTIONS.length} questions pour obtenir votre diagnostic fiable (Répondu : ${answeredCount}/${DIAGNOSTIC_QUESTIONS.length}).`);
+    return;
+  }
+
+  // Calcul du diagnostic
+  let innerSuccessPoints = 0;
+  const blocksPoints = {};
+  const tanksEmptyPoints = {};
+
+  Object.values(answers).forEach(val => {
+    if (val === 'inner_success' || val === 'tank_self' || val === 'tank_spiritual' || val === 'tank_parents' || val === 'tank_romance' || val === 'tank_family_friends' || val === 'tank_divine_purpose') {
+      innerSuccessPoints += 10;
+    }
+    if (val.startsWith('block_')) {
+      const blockId = val.replace('block_', '');
+      blocksPoints[blockId] = (blocksPoints[blockId] || 0) + 1;
+    }
+    if (val.endsWith('_empty')) {
+      const tankId = val.replace('_empty', '').replace('tank_', '');
+      tanksEmptyPoints[tankId] = (tanksEmptyPoints[tankId] || 0) + 1;
+    }
+  });
+
+  // Déterminer le blocage dominant
+  let dominantBlock = 'anxiety';
+  let maxBlockCount = -1;
+  Object.keys(blocksPoints).forEach(b => {
+    if (blocksPoints[b] > maxBlockCount) {
+      maxBlockCount = blocksPoints[b];
+      dominantBlock = b;
+    }
+  });
+
+  // Déterminer le réservoir le plus bas
+  let lowestTank = 'spiritual';
+  let maxTankEmpty = -1;
+  Object.keys(tanksEmptyPoints).forEach(t => {
+    if (tanksEmptyPoints[t] > maxTankEmpty) {
+      maxTankEmpty = tanksEmptyPoints[t];
+      lowestTank = t;
+    }
+  });
+
+  const harmonyScore = Math.min(100, Math.max(15, innerSuccessPoints));
+  showDiagnosticResultModal(harmonyScore, dominantBlock, lowestTank);
+}
+
+function showDiagnosticResultModal(harmonyScore, blockId, tankId) {
+  const modal = document.getElementById('diagnostic-modal');
+  const content = document.getElementById('diagnostic-modal-content');
+  if (!modal || !content) return;
+
+  const blockObj = BLOCKS_DATA.find(b => b.id === blockId) || BLOCKS_DATA[0];
+  const tankObj = LOVE_TANKS_DATA.find(t => t.id.includes(tankId)) || LOVE_TANKS_DATA[0];
+
+  content.innerHTML = `
+    <div class="p-6 sm:p-8 space-y-6">
+      <div class="text-center space-y-2">
+        <span class="px-3 py-1 bg-primary-light text-primary text-xs font-bold uppercase rounded-full tracking-wider">Résultats du Grand Bilan John Gray</span>
+        <h3 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Votre Profil d'Harmonie Intérieure</h3>
+        <p class="text-xs text-gray-500 max-w-md mx-auto">Voici l'état de vos fondations intérieures selon les 4 piliers de la méthode.</p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-gradient-to-br from-primary-light via-white to-amber-50 border border-amber-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        <div>
+          <span class="text-xs font-bold text-primary uppercase tracking-wider">Indice de Paix & Complétude</span>
+          <div class="text-4xl font-serif font-bold text-gray-900 mt-0.5">${harmonyScore}%</div>
+          <p class="text-xs text-gray-600 mt-1">${harmonyScore >= 70 ? 'Excellent équilibre entre accomplissement extérieur et gratitude.' : harmonyScore >= 45 ? 'Équilibre moyen : tendance à chercher à l'extérieur pour combler un manque.' : 'Alerte carence : votre réservoir intérieur réclame une pause urgente.'}</p>
+        </div>
+        <div class="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary shrink-0">
+          <i data-lucide="award" class="w-8 h-8"></i>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-5 rounded-3xl bg-red-50/60 border border-red-100 space-y-2">
+          <span class="text-[10px] font-bold text-red-700 uppercase tracking-wider">Blocage Émotionnel Actif</span>
+          <h4 class="font-serif font-bold text-red-950 text-base">${blockObj.name}</h4>
+          <p class="text-xs text-red-900/80 leading-relaxed">${blockObj.description}</p>
+          <button onclick="closeDiagnosticModal(); selectBlock('${blockObj.id}'); switchTab('blocks');" class="mt-2 text-xs font-bold text-red-700 hover:underline flex items-center gap-1">
+            Voir l'antidote et libérer ce blocage &rarr;
+          </button>
+        </div>
+
+        <div class="p-5 rounded-3xl bg-amber-50/60 border border-amber-100 space-y-2">
+          <span class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Réservoir d'Amour en Alerte</span>
+          <h4 class="font-serif font-bold text-amber-950 text-base">${tankObj.name}</h4>
+          <p class="text-xs text-amber-900/80 leading-relaxed">${tankObj.emptySign}</p>
+          <button onclick="closeDiagnosticModal(); switchTab('tanks');" class="mt-2 text-xs font-bold text-amber-800 hover:underline flex items-center gap-1">
+            Recharger ce réservoir &rarr;
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+        <button onclick="closeDiagnosticModal()" class="px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-smooth">
+          Appliquer les Recommandations
+        </button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+  initLucideIcons();
+}
+
+window.closeDiagnosticModal = function() {
+  const modal = document.getElementById('diagnostic-modal');
+  if (modal) modal.classList.add('hidden');
+};
+
+
+// ==========================================
+// MODULE 8 : SOS SECOURS ÉMOTIONNEL D'URGENCE
+// ==========================================
+const SOS_PROTOCOLS = {
+  anger: {
+    title: "🚨 SOS Colère & Fureur Brûlante",
+    subtitle: "Protocole de purge rapide en 3 minutes (Ne blessez personne)",
+    steps: [
+      "1. Isoler-vous immédiatement (pièce fermée ou voiture).",
+      "2. Inspirez à fond par le nez, puis soufflez violemment par la bouche en serrant les poings (5 cycles).",
+      "3. Écrivez sur un papier jetable ou dans l'atelier : 'Je suis furieux(se) contre... et je déteste que...'",
+      "4. Rappel John Gray : 'Sous ma colère se cache une immense tristesse que je refuse de voir.' Respirez dans la blessure."
+    ],
+    duration: 180
+  },
+  anxiety: {
+    title: "🚨 SOS Crise d'Angoisse & Panique",
+    subtitle: "Protocole vagal 4-7-8 d'apaisement immédiat du système nerveux",
+    steps: [
+      "1. Posez les deux pieds fermement sur le sol et une main sur le cœur.",
+      "2. Inspirez par le nez pendant 4 secondes.",
+      "3. Retenez votre souffle doucement pendant 7 secondes.",
+      "4. Expirez lentement par la bouche avec un doux soupir pendant 8 secondes.",
+      "5. Répétez 4 cycles. Répétez intérieurement : 'Ici et maintenant, dans cette seconde précise, je suis en sécurité.'"
+    ],
+    duration: 120
+  },
+  guilt: {
+    title: "🚨 SOS Culpabilité & Honte Destructrice",
+    subtitle: "Protocole d'auto-maternage immédiat (Cessation de l'auto-flagellation)",
+    steps: [
+      "1. Croisez vos bras sur votre poitrine et enlacez-vous fermement avec tendresse.",
+      "2. Répétez à voix haute : 'J'ai commis une erreur, mais je ne suis PAS une mauvaise personne.'",
+      "3. Rappel John Gray : 'L'enfant en moi a fait du mieux qu'il pouvait avec la détresse qu'il ressentait.'",
+      "4. Décidez d'une action de réparation concrète ou d'un pardon sincère sans punition stérile."
+    ],
+    duration: 180
+  },
+  procrastination: {
+    title: "🚨 SOS Procrastination & Paralysie",
+    subtitle: "La règle des 2 minutes pour briser l'inertie de l'ego",
+    steps: [
+      "1. Choisissez la tâche que vous redoutez le plus.",
+      "2. Découpez-la pour n'en garder qu'une action minuscule de 120 secondes (ex: ouvrir le document, écrire un seul mot, ranger un objet).",
+      "3. Lancez le chronomètre ci-dessous : vous avez l'autorisation d'arrêter dès que le temps est écoulé !",
+      "4. Rappel John Gray : 'L'action imparfaite dissout la terreur du jugement.'"
+    ],
+    duration: 120
+  }
+};
+
+let sosInterval = null;
+let sosRemainingSeconds = 0;
+
+function initSosModule() {
+  const openBtns = [
+    document.getElementById('sos-open-btn'),
+    document.getElementById('sos-open-mobile-btn')
+  ];
+
+  openBtns.forEach(btn => {
+    if (btn) btn.onclick = () => openSosModal('anger');
+  });
+}
+
+window.openSosModal = function(protocolKey = 'anger') {
+  const modal = document.getElementById('sos-modal');
+  if (!modal) return;
+  loadSosProtocol(protocolKey);
+  modal.classList.remove('hidden');
+  initLucideIcons();
+};
+
+window.loadSosProtocol = function(key) {
+  const proto = SOS_PROTOCOLS[key] || SOS_PROTOCOLS.anger;
+  const container = document.getElementById('sos-protocol-content');
+  if (!container) return;
+
+  if (sosInterval) clearInterval(sosInterval);
+  sosRemainingSeconds = proto.duration;
+
+  container.innerHTML = `
+    <div class="space-y-4 text-left">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div>
+          <h3 class="font-serif font-bold text-red-950 text-xl">${proto.title}</h3>
+          <p class="text-xs text-red-800 font-medium mt-0.5">${proto.subtitle}</p>
+        </div>
+        <div id="sos-timer-display" class="font-serif text-3xl font-bold text-red-600 bg-red-50 px-3 py-1 rounded-2xl border border-red-100">
+          ${Math.floor(proto.duration / 60)}:00
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white border border-gray-100 space-y-2.5 text-xs text-gray-800">
+        ${proto.steps.map(s => `<p class="flex items-start gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-red-600 shrink-0 mt-0.5"></i> <span>${s}</span></p>`).join('')}
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="startSosTimer()" class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-smooth">
+          <i data-lucide="play" class="w-4 h-4"></i> Démarrer le Protocole d'Urgence
+        </button>
+        <button onclick="closeSosModal()" class="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200 transition-smooth">
+          Fermer
+        </button>
+      </div>
+    </div>
+  `;
+
+  initLucideIcons();
+};
+
+window.startSosTimer = function() {
+  if (sosInterval) clearInterval(sosInterval);
+  playSingingBowlTone();
+  triggerHaptic(50);
+
+  sosInterval = setInterval(() => {
+    if (sosRemainingSeconds > 0) {
+      sosRemainingSeconds--;
+      const timerEl = document.getElementById('sos-timer-display');
+      if (timerEl) {
+        const mins = Math.floor(sosRemainingSeconds / 60);
+        const secs = sosRemainingSeconds % 60;
+        timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+    } else {
+      clearInterval(sosInterval);
+      playSingingBowlTone();
+      alert('Protocole SOS terminé. Prenez une profonde inspiration dans le cœur. Vous avez repris le contrôle.');
+    }
+  }, 1000);
+};
+
+window.closeSosModal = function() {
+  if (sosInterval) clearInterval(sosInterval);
+  const modal = document.getElementById('sos-modal');
+  if (modal) modal.classList.add('hidden');
+};
+
+
+// ==========================================
+// MODULE 9 : GÉNÉRATEUR D'AMBIANCES SONORES WEB AUDIO
+// ==========================================
+let soundscapeActiveType = 'none';
+let soundscapeNodes = null;
+let soundscapeGain = null;
+
+function initSoundscapes() {
+  const soundSelect = document.getElementById('soundscape-select');
+  const volumeSlider = document.getElementById('soundscape-volume');
+
+  if (soundSelect) {
+    soundSelect.onchange = (e) => {
+      setSoundscape(e.target.value);
+    };
+  }
+
+  if (volumeSlider) {
+    volumeSlider.oninput = (e) => {
+      setSoundscapeVolume(parseFloat(e.target.value));
+    };
+  }
+}
+
+function setSoundscape(type) {
+  stopSoundscape();
+  soundscapeActiveType = type;
+  if (type === 'none') return;
+
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    soundscapeGain = audioCtx.createGain();
+    const volInput = document.getElementById('soundscape-volume');
+    const initialVol = volInput ? parseFloat(volInput.value) : 0.4;
+    soundscapeGain.gain.setValueAtTime(initialVol, audioCtx.currentTime);
+    soundscapeGain.connect(audioCtx.destination);
+
+    if (type === 'waves') {
+      soundscapeNodes = createOceanWavesSound(audioCtx, soundscapeGain);
+    } else if (type === 'rain') {
+      soundscapeNodes = createRainSound(audioCtx, soundscapeGain);
+    } else if (type === '432hz') {
+      soundscapeNodes = createToneSound(audioCtx, soundscapeGain, 432);
+    } else if (type === '528hz') {
+      soundscapeNodes = createToneSound(audioCtx, soundscapeGain, 528);
+    }
+  } catch(e) {
+    console.log('Erreur soundscape audio', e);
+  }
+}
+
+function setSoundscapeVolume(val) {
+  if (soundscapeGain && audioCtx) {
+    soundscapeGain.gain.setValueAtTime(val, audioCtx.currentTime);
+  }
+}
+
+function stopSoundscape() {
+  if (soundscapeNodes) {
+    soundscapeNodes.forEach(n => {
+      try { n.stop(); } catch(e) {}
+      try { n.disconnect(); } catch(e) {}
+    });
+    soundscapeNodes = null;
+  }
+}
+
+function createOceanWavesSound(ctx, destination) {
+  // Générateur de bruit rose filtré par LFO imitant le ressac des vagues
+  const bufferSize = ctx.sampleRate * 2;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  let b0 = 0, b1 = 0, b2 = 0, b3 = 0;
+  for (let i = 0; i < bufferSize; i++) {
+    const white = Math.random() * 2 - 1;
+    b0 = 0.99886 * b0 + white * 0.0555179;
+    b1 = 0.99332 * b1 + white * 0.0750759;
+    b2 = 0.96900 * b2 + white * 0.1538520;
+    b3 = 0.86650 * b3 + white * 0.3104856;
+    output[i] = (b0 + b1 + b2 + b3) * 0.1;
+  }
+
+  const whiteNoise = ctx.createBufferSource();
+  whiteNoise.buffer = noiseBuffer;
+  whiteNoise.loop = true;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(300, ctx.currentTime);
+
+  // Modulation de vagues
+  const lfo = ctx.createOscillator();
+  lfo.frequency.setValueAtTime(0.08, ctx.currentTime); // 1 vague toutes les 12s
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.setValueAtTime(250, ctx.currentTime);
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(filter.frequency);
+
+  whiteNoise.connect(filter);
+  filter.connect(destination);
+
+  whiteNoise.start();
+  lfo.start();
+  return [whiteNoise, lfo];
+}
+
+function createRainSound(ctx, destination) {
+  const bufferSize = ctx.sampleRate * 2;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    output[i] = (Math.random() * 2 - 1) * 0.15;
+  }
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuffer;
+  noise.loop = true;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(850, ctx.currentTime);
+
+  noise.connect(filter);
+  filter.connect(destination);
+
+  noise.start();
+  return [noise];
+}
+
+function createToneSound(ctx, destination, frequency) {
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+
+  osc1.type = 'sine';
+  osc1.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(frequency * 2, ctx.currentTime);
+
+  const subGain = ctx.createGain();
+  subGain.gain.setValueAtTime(0.15, ctx.currentTime);
+  osc2.connect(subGain);
+
+  osc1.connect(destination);
+  subGain.connect(destination);
+
+  osc1.start();
+  osc2.start();
+  return [osc1, osc2];
+}
+
+
+// ==========================================
+// MODULE 10 : VERROUILLAGE CONFIDENTIALITÉ CODE PIN
+// ==========================================
+let isVaultUnlocked = false;
+
+function initPrivacyLock() {
+  const lockToggleBtn = document.getElementById('vault-lock-toggle-btn');
+  const storedPin = localStorage.getItem('voie_interieure_pin');
+
+  if (storedPin) {
+    isVaultUnlocked = false;
+    updateLockIndicator(true);
+  } else {
+    isVaultUnlocked = true;
+    updateLockIndicator(false);
+  }
+
+  if (lockToggleBtn) {
+    lockToggleBtn.onclick = () => {
+      const currentPin = localStorage.getItem('voie_interieure_pin');
+      if (currentPin) {
+        if (isVaultUnlocked) {
+          isVaultUnlocked = false;
+          updateLockIndicator(true);
+          alert('Coffre-fort des lettres reverrouillé !');
+          if (state.currentTab === 'letters') switchTab('dashboard');
+        } else {
+          openPinPromptModal();
+        }
+      } else {
+        openPinSetupModal();
+      }
+    };
+  }
+}
+
+function updateLockIndicator(isLocked) {
+  const indicator = document.getElementById('vault-lock-indicator');
+  if (indicator) {
+    indicator.innerHTML = isLocked ? '<i data-lucide="lock" class="w-4 h-4 text-red-500"></i>' : '<i data-lucide="unlock" class="w-4 h-4 text-emerald-500"></i>';
+    initLucideIcons();
+  }
+}
+
+function openPinSetupModal() {
+  const pin = prompt('Définissez un code PIN à 4 chiffres pour protéger vos lettres intimes :');
+  if (pin && pin.length >= 4) {
+    localStorage.setItem('voie_interieure_pin', pin.substring(0, 4));
+    isVaultUnlocked = true;
+    updateLockIndicator(false);
+    alert('Code PIN enregistré avec succès ! Vos lettres sont protégées.');
+  }
+}
+
+function openPinPromptModal() {
+  const inputPin = prompt('Entrez votre code PIN à 4 chiffres pour déverrouiller vos lettres :');
+  const storedPin = localStorage.getItem('voie_interieure_pin');
+  if (inputPin === storedPin) {
+    isVaultUnlocked = true;
+    updateLockIndicator(false);
+    alert('Accès autorisé. Vos lettres sont déverrouillées.');
+    switchTab('letters');
+  } else {
+    alert('Code PIN incorrect.');
+  }
+}
+
+
+// ==========================================
+// MODULE 11 : SUIVI DE SÉRIE (STREAK JOURNAL)
+// ==========================================
+function initStreak() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  let streakData = JSON.parse(localStorage.getItem('voie_interieure_streak') || '{"count": 0, "lastDate": ""}');
+
+  if (streakData.lastDate !== todayStr) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (streakData.lastDate === yesterdayStr) {
+      streakData.count += 1;
+    } else if (!streakData.lastDate) {
+      streakData.count = 1;
+    } else {
+      streakData.count = 1; // reset
+    }
+    streakData.lastDate = todayStr;
+    localStorage.setItem('voie_interieure_streak', JSON.stringify(streakData));
+  }
+
+  const streakDisplay = document.getElementById('dash-streak-count');
+  if (streakDisplay) {
+    streakDisplay.textContent = `${streakData.count} j`;
+  }
+}
+
+
+// ==========================================
+// MODULE 12 : RECHERCHE UNIVERSELLE INSTANTANÉE
+// ==========================================
+function initGlobalSearch() {
+  const searchInput = document.getElementById('global-search-input');
+  if (!searchInput) return;
+
+  searchInput.oninput = (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    performGlobalSearch(q);
+  };
+}
+
+function performGlobalSearch(query) {
+  const resultsContainer = document.getElementById('search-results-box');
+  if (!resultsContainer) return;
+
+  if (!query || query.length < 2) {
+    resultsContainer.classList.add('hidden');
+    return;
+  }
+
+  const matches = [];
+
+  // 1. Chercher dans les Chapitres du Codex
+  BOOK_CODEX.forEach((ch, idx) => {
+    if (ch.title.toLowerCase().includes(query) || ch.summary.toLowerCase().includes(query) || ch.keyTakeaways.some(k => k.toLowerCase().includes(query))) {
+      matches.push({
+        category: "Codex du Livre",
+        title: ch.title,
+        snippet: ch.summary,
+        action: () => switchTab('codex')
+      });
+    }
+  });
+
+  // 2. Chercher dans les 10 Réservoirs
+  LOVE_TANKS_DATA.forEach(t => {
+    if (t.name.toLowerCase().includes(query) || t.desc.toLowerCase().includes(query) || t.emptySign.toLowerCase().includes(query)) {
+      matches.push({
+        category: "Réservoirs d'Amour",
+        title: t.name,
+        snippet: t.emptySign,
+        action: () => switchTab('tanks')
+      });
+    }
+  });
+
+  // 3. Chercher dans les 12 Blocages
+  BLOCKS_DATA.forEach(b => {
+    if (b.name.toLowerCase().includes(query) || b.description.toLowerCase().includes(query) || b.antidote.toLowerCase().includes(query)) {
+      matches.push({
+        category: "Les 12 Blocages",
+        title: b.name,
+        snippet: b.antidote,
+        action: () => { selectBlock(b.id); switchTab('blocks'); }
+      });
+    }
+  });
+
+  // 4. Chercher dans les Lettres rédigées
+  state.letters.forEach(l => {
+    if (l.recipient.toLowerCase().includes(query) || l.topic.toLowerCase().includes(query) || (l.love && l.love.toLowerCase().includes(query))) {
+      matches.push({
+        category: "Mes Lettres Enregistrées",
+        title: `Lettre à ${l.recipient}`,
+        snippet: l.topic,
+        action: () => { switchTab('letters'); viewLetterDetails(l.id); }
+      });
+    }
+  });
+
+  if (matches.length === 0) {
+    resultsContainer.innerHTML = `
+      <div class="p-4 text-xs text-gray-500 text-center">Aucun résultat trouvé pour « ${query} ».</div>
+    `;
+  } else {
+    resultsContainer.innerHTML = matches.slice(0, 6).map((m, mIdx) => `
+      <div onclick="executeSearchResult(${mIdx})" class="p-3 hover:bg-primary-light/40 rounded-xl cursor-pointer transition-smooth border-b border-gray-100 last:border-b-0 space-y-0.5">
+        <span class="text-[10px] font-bold text-primary uppercase">${m.category}</span>
+        <h5 class="font-bold text-xs text-gray-900">${m.title}</h5>
+        <p class="text-[11px] text-gray-500 line-clamp-1">${m.snippet}</p>
+      </div>
+    `).join('');
+    window._currentSearchMatches = matches;
+  }
+
+  resultsContainer.classList.remove('hidden');
+}
+
+window.executeSearchResult = function(idx) {
+  if (window._currentSearchMatches && window._currentSearchMatches[idx]) {
+    window._currentSearchMatches[idx].action();
+    const resultsContainer = document.getElementById('search-results-box');
+    if (resultsContainer) resultsContainer.classList.add('hidden');
+    const searchInput = document.getElementById('global-search-input');
+    if (searchInput) searchInput.value = '';
+  }
+};

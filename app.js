@@ -585,6 +585,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFromLocalStorage();
   initLucideIcons();
   setupNavigation();
+  initTheme();
+  initPWA();
   initDashboard();
   initCodex();
   initTanks();
@@ -595,6 +597,104 @@ document.addEventListener('DOMContentLoaded', () => {
   initGratitude();
   initBackupSystem();
 });
+
+// Gestion du Thème (Dark Mode)
+function initTheme() {
+  const isDark = localStorage.getItem('voie_interieure_dark') === 'true';
+  if (isDark) {
+    document.body.classList.add('dark');
+  }
+
+  const toggleBtns = [
+    document.getElementById('theme-toggle-btn'),
+    document.getElementById('theme-toggle-mobile-btn')
+  ];
+
+  toggleBtns.forEach(btn => {
+    if (!btn) return;
+    btn.onclick = () => {
+      const active = document.body.classList.toggle('dark');
+      localStorage.setItem('voie_interieure_dark', active ? 'true' : 'false');
+      // Update icons
+      document.querySelectorAll('#theme-toggle-btn i, #theme-toggle-mobile-btn i').forEach(icon => {
+        icon.setAttribute('data-lucide', active ? 'sun' : 'moon');
+      });
+      initLucideIcons();
+    };
+  });
+}
+
+// Gestion PWA (Service Worker & Installation)
+let deferredPrompt = null;
+
+function initPWA() {
+  // 1. Enregistrement du Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => {
+          console.log('[PWA] Service Worker actif et enregistré avec succès:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] Échec enregistrement Service Worker:', err);
+        });
+    });
+  }
+
+  // 2. Gestion du bouton d'installation (Android / Chrome / Edge)
+  const installBtnDesktop = document.getElementById('pwa-install-btn');
+  const installBtnMobile = document.getElementById('pwa-install-mobile-btn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtnDesktop) installBtnDesktop.classList.remove('hidden');
+    if (installBtnMobile) installBtnMobile.classList.remove('hidden');
+  });
+
+  const triggerInstall = () => {
+    // Si sur iOS Safari
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIos && !window.matchMedia('(display-mode: standalone)').matches) {
+      openIosInstallModal();
+      return;
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('[PWA] Installation acceptée par l\'utilisateur');
+          if (installBtnDesktop) installBtnDesktop.classList.add('hidden');
+          if (installBtnMobile) installBtnMobile.classList.add('hidden');
+        }
+        deferredPrompt = null;
+      });
+    } else {
+      alert('L\'application est déjà installée ou votre navigateur permet l\'installation via le menu du navigateur.');
+    }
+  };
+
+  if (installBtnDesktop) installBtnDesktop.onclick = triggerInstall;
+  if (installBtnMobile) installBtnMobile.onclick = triggerInstall;
+
+  window.addEventListener('appinstalled', () => {
+    console.log('[PWA] Application installée avec succès sur l\'appareil !');
+    if (installBtnDesktop) installBtnDesktop.classList.add('hidden');
+    if (installBtnMobile) installBtnMobile.classList.add('hidden');
+  });
+}
+
+window.openIosInstallModal = function() {
+  const modal = document.getElementById('ios-install-modal');
+  if (modal) modal.classList.remove('hidden');
+  initLucideIcons();
+};
+
+window.closeIosInstallModal = function() {
+  const modal = document.getElementById('ios-install-modal');
+  if (modal) modal.classList.add('hidden');
+};
 
 // Sauvegarde & Restauration LocalStorage
 function saveToLocalStorage() {
@@ -653,12 +753,25 @@ function switchTab(tabId) {
     activePanel.classList.remove('hidden');
   }
 
-  document.querySelectorAll('[data-tab-target]').forEach(btn => {
+  // Barre latérale bureau
+  document.querySelectorAll('aside [data-tab-target]').forEach(btn => {
     const isTarget = btn.getAttribute('data-tab-target') === tabId;
     btn.classList.toggle('bg-primary-light', isTarget);
     btn.classList.toggle('text-primary', isTarget);
     btn.classList.toggle('font-semibold', isTarget);
     btn.classList.toggle('text-gray-600', !isTarget);
+  });
+
+  // Barre mobile inférieure
+  document.querySelectorAll('nav.md\\:hidden [data-tab-target]').forEach(btn => {
+    const isTarget = btn.getAttribute('data-tab-target') === tabId;
+    btn.classList.toggle('text-primary', isTarget);
+    btn.classList.toggle('text-gray-400', !isTarget);
+    const span = btn.querySelector('span');
+    if (span) {
+      span.classList.toggle('font-bold', isTarget);
+      span.classList.toggle('font-medium', !isTarget);
+    }
   });
 
   if (tabId === 'tanks') {
@@ -1627,17 +1740,44 @@ function startMeditation() {
 
       breathCount = (breathCount + 1) % 10;
       updateBreathingLabel(breathText, breathCount);
-      if (breathCount === 0 || breathCount === 5) {
-        // pulsation douce
+      
+      // Vibration haptique douce et rappel vocal aux bascules
+      if (breathCount === 0) {
+        triggerHaptic(40);
+        speakGuidance("Inspirez par le cœur.");
+      } else if (breathCount === 5) {
+        triggerHaptic(30);
+        speakGuidance("Expirez et relâchez.");
       }
     } else {
       resetMeditation();
       playSingingBowlTone();
+      speakGuidance("Méditation terminée. Paix et gratitude dans votre cœur.");
       alert('Session de Méditation du Cœur terminée. Votre corps est détendu, votre esprit est clair.');
     }
   }, 1000);
 
   initLucideIcons();
+}
+
+function triggerHaptic(durationMs = 30) {
+  if ('vibrate' in navigator) {
+    try { navigator.vibrate(durationMs); } catch(e) {}
+  }
+}
+
+function speakGuidance(text) {
+  const toggle = document.getElementById('med-voice-toggle');
+  if (!toggle || !toggle.checked) return;
+  if (!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'fr-FR';
+    utterance.rate = 0.85; // Rythme apaisant
+    utterance.pitch = 0.95;
+    window.speechSynthesis.speak(utterance);
+  } catch(e) {}
 }
 
 function updateBreathingLabel(el, sec) {

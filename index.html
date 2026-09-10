@@ -2,13 +2,24 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Application de Guidage Intégral — John Gray : Obtenir Ce Que Nous Désirons & Apprécier Ce Que Nous Possédons</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Voie Intérieure — Application John Gray (PWA)</title>
   
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#9b5134">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Voie Intérieure">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
@@ -32,55 +43,68 @@
   <!-- Styles personnalisés -->
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="min-h-screen bg-[#fbfaf8] flex flex-col md:flex-row antialiased text-gray-800">
+<body class="min-h-screen bg-[#fbfaf8] flex flex-col md:flex-row antialiased text-gray-800 pb-20 md:pb-0 select-none">
 
-  <!-- Barre latérale / Navigation principale -->
-  <aside class="w-full md:w-72 bg-white border-r border-gray-100 flex flex-col justify-between shrink-0 p-6 no-print shadow-sm">
+  <!-- Barre latérale / Navigation Bureau -->
+  <aside class="w-full md:w-72 bg-white border-r border-gray-100 hidden md:flex flex-col justify-between shrink-0 p-6 no-print shadow-sm">
     <div class="space-y-6">
-      <!-- En-tête de l'application -->
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl bg-primary-light flex items-center justify-center text-primary shadow-inner">
-          <i data-lucide="compass" class="w-6 h-6"></i>
+      <!-- En-tête de l'application & Logo -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-primary-light flex items-center justify-center text-primary shadow-inner">
+            <i data-lucide="compass" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="font-serif font-bold text-gray-900 text-lg leading-tight">Voie Intérieure</h1>
+            <p class="text-[11px] text-gray-400 font-medium tracking-wide">Méthode John Gray</p>
+          </div>
         </div>
-        <div>
-          <h1 class="font-serif font-bold text-gray-900 text-lg leading-tight">Voie Intérieure</h1>
-          <p class="text-[11px] text-gray-400 font-medium tracking-wide">Méthode Intégrale John Gray</p>
-        </div>
+
+        <!-- Bouton Dark Mode -->
+        <button id="theme-toggle-btn" class="p-2 text-gray-400 hover:text-primary rounded-xl hover:bg-gray-100 transition-smooth" title="Basculer Mode Jour/Nuit">
+          <i data-lucide="moon" class="w-4 h-4"></i>
+        </button>
       </div>
 
-      <!-- Navigation -->
+      <!-- Bouton d'installation PWA Bureau -->
+      <button id="pwa-install-btn" class="hidden w-full px-4 py-2.5 bg-gradient-to-r from-primary to-amber-700 text-white text-xs font-bold rounded-2xl shadow-sm hover:opacity-95 transition-smooth flex items-center justify-center gap-2">
+        <i data-lucide="download-cloud" class="w-4 h-4"></i>
+        <span>Installer l'App sur mon PC</span>
+      </button>
+
+      <!-- Navigation Bureau -->
       <nav class="space-y-1 text-sm font-medium">
-        <button data-tab-target="dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-primary-light text-primary font-semibold transition-smooth text-left">
+        <button data-tab-target="dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-primary-light text-primary font-semibold transition-smooth text-left">
           <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
           <span>Tableau de Bord</span>
         </button>
 
-        <button data-tab-target="codex" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+        <button data-tab-target="codex" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
           <i data-lucide="book-marked" class="w-4 h-4"></i>
           <span>Codex du Livre</span>
         </button>
 
-        <button data-tab-target="tanks" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+        <button data-tab-target="tanks" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
           <i data-lucide="heart" class="w-4 h-4"></i>
           <span>Les 10 Réservoirs</span>
         </button>
 
-        <button data-tab-target="blocks" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+        <button data-tab-target="blocks" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
           <i data-lucide="unlock" class="w-4 h-4"></i>
           <span>Les 12 Blocages</span>
         </button>
 
-        <button data-tab-target="letters" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+        <button data-tab-target="letters" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
           <i data-lucide="feather" class="w-4 h-4"></i>
           <span>Lettre des Sentiments</span>
         </button>
 
-        <button data-tab-target="desires" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+        <button data-tab-target="desires" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
           <i data-lucide="target" class="w-4 h-4"></i>
           <span>Désirs d'Âme vs Ego</span>
         </button>
 
-        <button data-tab-target="meditation" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+        <button data-tab-target="meditation" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
           <i data-lucide="sparkles" class="w-4 h-4"></i>
           <span>Méditation & Gratitude</span>
         </button>
@@ -92,12 +116,12 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1.5 text-primary font-bold">
           <i data-lucide="shield-check" class="w-4 h-4"></i>
-          <span>Privé & Local</span>
+          <span>PWA 100% Hors-Ligne</span>
         </div>
         <button 
           id="export-data-btn" 
-          class="p-1 text-gray-400 hover:text-primary transition-smooth" 
-          title="Exporter une sauvegarde JSON de vos lettres et données"
+          class="p-1.5 text-gray-400 hover:text-primary rounded-lg transition-smooth" 
+          title="Exporter une sauvegarde JSON de vos écrits"
         >
           <i data-lucide="download" class="w-4 h-4"></i>
         </button>
@@ -108,8 +132,26 @@
     </div>
   </aside>
 
+  <!-- En-tête Mobile (Visible uniquement sur smartphone) -->
+  <header class="md:hidden flex items-center justify-between p-4 bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 no-print">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center text-primary shadow-inner">
+        <i data-lucide="compass" class="w-5 h-5"></i>
+      </div>
+      <span class="font-serif font-bold text-gray-900 text-base">Voie Intérieure</span>
+    </div>
+    <div class="flex items-center gap-1">
+      <button id="pwa-install-mobile-btn" class="hidden px-2.5 py-1 bg-primary text-white rounded-lg text-[11px] font-bold flex items-center gap-1">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i> Installer
+      </button>
+      <button id="theme-toggle-mobile-btn" class="p-2 text-gray-500 rounded-lg">
+        <i data-lucide="moon" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
   <!-- Contenu Principal -->
-  <main class="flex-1 p-4 sm:p-8 md:p-10 max-w-6xl mx-auto overflow-y-auto">
+  <main class="flex-1 p-4 sm:p-8 md:p-10 max-w-6xl mx-auto overflow-y-auto w-full">
 
     <!-- Onglet 1 : Tableau de bord (Dashboard) -->
     <section data-tab-content="dashboard" class="space-y-8">
@@ -127,47 +169,47 @@
       </div>
 
       <!-- Statistiques d'Harmonie & Accès Rapides -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
-          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
-            <span>Harmonie Globale</span>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="p-4 sm:p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-1">
+            <span>Harmonie</span>
             <i data-lucide="activity" class="w-4 h-4 text-primary"></i>
           </div>
-          <div id="dash-tank-avg" class="text-2xl font-bold font-serif text-gray-900">55%</div>
-          <p class="text-[11px] text-gray-400 mt-1">Moyenne des 10 Réservoirs</p>
+          <div id="dash-tank-avg" class="text-xl sm:text-2xl font-bold font-serif text-gray-900">55%</div>
+          <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Moyenne Réservoirs</p>
         </div>
 
-        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
-          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
-            <span>Réservoir Prioritaire</span>
+        <div class="p-4 sm:p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-1">
+            <span>À Soigner</span>
             <i data-lucide="alert-circle" class="w-4 h-4 text-amber-500"></i>
           </div>
-          <div id="dash-lowest-tank" class="text-sm font-bold text-amber-900 truncate">Calcul en cours...</div>
-          <p class="text-[11px] text-gray-400 mt-1">Nécessite votre attention</p>
+          <div id="dash-lowest-tank" class="text-xs sm:text-sm font-bold text-amber-900 truncate">Calcul...</div>
+          <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Réservoir le plus bas</p>
         </div>
 
-        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
-          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
-            <span>Lettres Rédigées</span>
+        <div class="p-4 sm:p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-1">
+            <span>Lettres</span>
             <i data-lucide="mail-check" class="w-4 h-4 text-emerald-600"></i>
           </div>
-          <div id="dash-letters-count" class="text-2xl font-bold font-serif text-gray-900">0</div>
-          <p class="text-[11px] text-gray-400 mt-1">Blocages libérés</p>
+          <div id="dash-letters-count" class="text-xl sm:text-2xl font-bold font-serif text-gray-900">0</div>
+          <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Blocages libérés</p>
         </div>
 
-        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
-          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
-            <span>Ancrages Gratitude</span>
+        <div class="p-4 sm:p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-1">
+            <span>Gratitudes</span>
             <i data-lucide="heart" class="w-4 h-4 text-rose-500"></i>
           </div>
-          <div id="dash-gratitude-count" class="text-2xl font-bold font-serif text-gray-900">0</div>
-          <p class="text-[11px] text-gray-400 mt-1">Jours d'appréciation vécus</p>
+          <div id="dash-gratitude-count" class="text-xl sm:text-2xl font-bold font-serif text-gray-900">0</div>
+          <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Ancrages vécus</p>
         </div>
       </div>
 
       <!-- Les Piliers Clés de la Méthode -->
       <div class="space-y-4">
-        <h3 class="font-serif text-xl font-bold text-gray-900">Accès Rapide aux Enseignements & Outils</h3>
+        <h3 class="font-serif text-xl font-bold text-gray-900">Modules de Guidage Intégral</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div onclick="switchTab('codex')" class="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm hover:border-amber-200 transition-smooth cursor-pointer space-y-2">
             <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center">
@@ -175,7 +217,7 @@
             </div>
             <h4 class="font-bold text-gray-900 text-base">Le Codex du Livre</h4>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Consultez la synthèse détaillée chapitre par chapitre des enseignements de John Gray.
+              Consultez la synthèse détaillée chapitre par chapitre de l'œuvre de John Gray.
             </p>
           </div>
 
@@ -185,7 +227,7 @@
             </div>
             <h4 class="font-bold text-gray-900 text-base">Les 10 Réservoirs</h4>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Cartographiez vos besoins d'amour sur le diagramme radar et apprenez à les nourrir.
+              Cartographiez vos besoins d'amour sur le diagramme radar dynamique et apprenez à les nourrir.
             </p>
           </div>
 
@@ -210,12 +252,12 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Le Codex Intégral de l'Ouvrage</h2>
         <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-          Retrouvez ici la quintessence des 5 grandes parties du livre de John Gray : <em>Comment obtenir ce que nous désirons et apprécier ce que nous possédons</em>.
+          Retrouvez la quintessence des 5 grandes parties du livre de John Gray : <em>Comment obtenir ce que nous désirons et apprécier ce que nous possédons</em>.
         </p>
       </div>
 
       <div id="codex-content-container" class="space-y-6">
-        <!-- Rempli dynamiquement par app.js -->
+        <!-- Rempli dynamiquement -->
       </div>
     </section>
 
@@ -227,7 +269,7 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Les 10 Réservoirs d'Amour</h2>
         <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-          John Gray explique que notre cœur possède 10 réservoirs distincts. Lorsqu'un réservoir précis est à sec, nous ressentons un vide et commettons l'erreur d'accabler notre couple ou notre carrière. Ajustez les curseurs ci-dessous pour cartographier vos niveaux actuels.
+          Ajustez les curseurs ci-dessous pour cartographier vos niveaux actuels et découvrir vos plans d'action personnalisés.
         </p>
       </div>
 
@@ -241,7 +283,7 @@
 
       <!-- Curseurs d'évaluation des 10 réservoirs -->
       <div id="tanks-sliders-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Rempli dynamiquement par app.js -->
+        <!-- Rempli dynamiquement -->
       </div>
     </section>
 
@@ -253,18 +295,18 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Les 12 Blocages au Succès Personnel</h2>
         <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-          Lorsque nous sommes piégés dans un état négatif, nous perdons l'accès à notre force créatrice. Sélectionnez un blocage pour découvrir sa blessure d'enfance originelle, la carte de ses sentiments masqués et son antidote.
+          Sélectionnez un blocage pour découvrir sa blessure d'enfance originelle, la carte de ses sentiments masqués et son antidote.
         </p>
       </div>
 
       <!-- Grille de sélection des 12 blocages -->
       <div id="blocks-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        <!-- Rempli dynamiquement par app.js -->
+        <!-- Rempli dynamiquement -->
       </div>
 
       <!-- Détails et alchimie du blocage sélectionné -->
       <div id="selected-block-details">
-        <!-- Rempli dynamiquement par app.js -->
+        <!-- Rempli dynamiquement -->
       </div>
     </section>
 
@@ -276,7 +318,7 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Atelier de la Lettre des Sentiments</h2>
         <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-          Pour guérir une blessure ou dissoudre un ressentiment, John Gray prescrit de traverser les 4 niveaux émotionnels (Colère $\rightarrow$ Tristesse $\rightarrow$ Peur $\rightarrow$ Regret) jusqu'à rouvrir son cœur à l'Amour et s'offrir la Lettre Réponse.
+          Traversez les 4 niveaux émotionnels (Colère $\rightarrow$ Tristesse $\rightarrow$ Peur $\rightarrow$ Regret) jusqu'à rouvrir votre cœur à l'Amour et vous offrir la Lettre Réponse.
         </p>
       </div>
 
@@ -341,7 +383,7 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Désirs de l'Âme vs Désirs de l'Ego</h2>
         <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-          John Gray démontre que vouloir obtenir des succès extérieurs pour combler un manque intérieur mène au surmenage et à l'amertume. Le véritable succès s'épanouit lorsque nos actions soutiennent le désir authentique de notre âme.
+          Testez n'importe quel désir ou ambition pour savoir s'il naît de l'âme ou du manque de l'ego.
         </p>
       </div>
 
@@ -435,7 +477,7 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Méditation du Cœur & Gratitude Active</h2>
         <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-          Pour John Gray, apprécier ce que l'on possède déjà transforme la chimie cérébrale et attire naturellement l'abondance. La respiration du cœur apaise instantanément le système nerveux.
+          Pour John Gray, apprécier ce que l'on possède déjà transforme la chimie cérébrale et attire naturellement l'abondance.
         </p>
       </div>
 
@@ -463,11 +505,17 @@
           </div>
         </div>
 
+        <!-- Option Guidage Vocal (Voix Douce en Français) -->
+        <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 px-4 py-2 rounded-xl">
+          <input type="checkbox" id="med-voice-toggle" class="accent-primary cursor-pointer" checked />
+          <label for="med-voice-toggle" class="cursor-pointer font-medium">Activer la voix douce de guidage respiratoire</label>
+        </div>
+
         <!-- Sélecteur de durée & Contrôles -->
         <div class="flex flex-wrap items-center justify-center gap-2">
-          <button onclick="setMeditationDuration(180)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-smooth">3 min</button>
-          <button onclick="setMeditationDuration(300)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary-light text-primary font-bold transition-smooth">5 min</button>
-          <button onclick="setMeditationDuration(600)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-smooth">10 min</button>
+          <button onclick="setMeditationDuration(180)" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-smooth">3 min</button>
+          <button onclick="setMeditationDuration(300)" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-primary-light text-primary transition-smooth">5 min</button>
+          <button onclick="setMeditationDuration(600)" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-smooth">10 min</button>
         </div>
 
         <div class="flex items-center gap-3 pt-2">
@@ -528,6 +576,49 @@
     </section>
 
   </main>
+
+  <!-- Barre de Navigation Mobile Inférieure (Style Application Native iOS/Android) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 flex items-center justify-around py-2.5 px-2 z-50 safe-bottom no-print shadow-lg">
+    <button data-tab-target="dashboard" class="flex flex-col items-center gap-1 text-primary">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold">Accueil</span>
+    </button>
+    <button data-tab-target="tanks" class="flex flex-col items-center gap-1 text-gray-400">
+      <i data-lucide="heart" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Réservoirs</span>
+    </button>
+    <button data-tab-target="blocks" class="flex flex-col items-center gap-1 text-gray-400">
+      <i data-lucide="unlock" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Blocages</span>
+    </button>
+    <button data-tab-target="letters" class="flex flex-col items-center gap-1 text-gray-400">
+      <i data-lucide="feather" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Lettres</span>
+    </button>
+    <button data-tab-target="meditation" class="flex flex-col items-center gap-1 text-gray-400">
+      <i data-lucide="sparkles" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Méditer</span>
+    </button>
+  </nav>
+
+  <!-- Modal d'Installation PWA pour iOS Safari -->
+  <div id="ios-install-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-primary-light text-primary flex items-center justify-center mx-auto">
+        <i data-lucide="smartphone" class="w-6 h-6"></i>
+      </div>
+      <h3 class="font-serif font-bold text-lg text-gray-900">Installer sur votre iPhone / iPad</h3>
+      <p class="text-xs text-gray-600 leading-relaxed">
+        Pour installer cette application sur votre écran d'accueil sans passer par l'App Store :
+      </p>
+      <div class="text-xs text-gray-700 bg-gray-50 p-4 rounded-2xl space-y-2 text-left">
+        <p class="flex items-center gap-2"><strong>1.</strong> Touchez l'icône <strong>Partager</strong> <i data-lucide="share" class="w-4 h-4 inline text-blue-500"></i> en bas de Safari.</p>
+        <p class="flex items-center gap-2"><strong>2.</strong> Faites défiler et touchez <strong>Sur l'écran d'accueil</strong> <i data-lucide="plus-square" class="w-4 h-4 inline"></i>.</p>
+        <p class="flex items-center gap-2"><strong>3.</strong> Touchez <strong>Ajouter</strong> en haut à droite.</p>
+      </div>
+      <button onclick="closeIosInstallModal()" class="w-full py-2.5 bg-primary text-white rounded-xl text-xs font-bold">Compris !</button>
+    </div>
+  </div>
 
   <!-- Modal pour Afficher / Imprimer une Lettre des Sentiments -->
   <div id="letter-view-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">

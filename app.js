@@ -2072,7 +2072,7 @@ function initDiagnosticQuiz() {
     <div class="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-4">
       <div class="flex items-center justify-between">
         <span class="text-xs font-bold uppercase tracking-wider text-primary">Question ${idx + 1} sur ${DIAGNOSTIC_QUESTIONS.length}</span>
-        <span class="text-[11px] text-gray-400 font-semibold">${q.category === 'harmony' ? 'Équilibre de Vie' : q.category === 'tanks' ? 'Réservoir d'Amour' : 'Blocage Émotionnel'}</span>
+        <span class="text-[11px] text-gray-400 font-semibold">${q.category === 'harmony' ? 'Équilibre de Vie' : q.category === 'tanks' ? 'Réservoirs d’Amour' : 'Blocage Émotionnel'}</span>
       </div>
       <h4 class="font-serif font-bold text-gray-900 text-base leading-snug">${q.question}</h4>
       <div class="space-y-2 pt-1">
@@ -2172,7 +2172,7 @@ function showDiagnosticResultModal(harmonyScore, blockId, tankId) {
         <div>
           <span class="text-xs font-bold text-primary uppercase tracking-wider">Indice de Paix & Complétude</span>
           <div class="text-4xl font-serif font-bold text-gray-900 mt-0.5">${harmonyScore}%</div>
-          <p class="text-xs text-gray-600 mt-1">${harmonyScore >= 70 ? 'Excellent équilibre entre accomplissement extérieur et gratitude.' : harmonyScore >= 45 ? 'Équilibre moyen : tendance à chercher à l'extérieur pour combler un manque.' : 'Alerte carence : votre réservoir intérieur réclame une pause urgente.'}</p>
+          <p class="text-xs text-gray-600 mt-1">${harmonyScore >= 70 ? 'Excellent équilibre entre accomplissement extérieur et gratitude.' : harmonyScore >= 45 ? 'Équilibre moyen : tendance à chercher à l’extérieur pour combler un manque.' : 'Alerte carence : votre réservoir intérieur réclame une pause urgente.'}</p>
         </div>
         <div class="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary shrink-0">
           <i data-lucide="award" class="w-8 h-8"></i>

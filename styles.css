@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap');
+
+:root {
+  --primary: #9b5134; /* Terracotta chaleureux */
+  --primary-light: #fbeee8;
+  --secondary: #2d4a43; /* Vert sauge profond */
+  --secondary-light: #edf4f1;
+  --accent: #d4a373; /* Or ambré */
+  --bg-main: #fbfaf8;
+  --surface: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Animations de respiration pour la méditation du coeur */
+@keyframes breathCycle {
+  0% {
+    transform: scale(0.85);
+    box-shadow: 0 0 0 0 rgba(155, 81, 52, 0.2);
+  }
+  45% {
+    transform: scale(1.25);
+    box-shadow: 0 0 35px 15px rgba(155, 81, 52, 0.25);
+  }
+  55% {
+    transform: scale(1.25);
+    box-shadow: 0 0 35px 15px rgba(155, 81, 52, 0.25);
+  }
+  100% {
+    transform: scale(0.85);
+    box-shadow: 0 0 0 0 rgba(155, 81, 52, 0);
+  }
+}
+
+.breathing-active {
+  animation: breathCycle 10s infinite ease-in-out;
+}
+
+/* Transitions douces */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ede8;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4c5b9;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b5a293;
+}
+
+/* Style d'impression spécial pour la Lettre des Sentiments */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .printable-letter {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+}

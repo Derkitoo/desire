@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application de Guidage Intégral — John Gray : Obtenir Ce Que Nous Désirons & Apprécier Ce Que Nous Possédons</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#9b5134',
+            'primary-light': '#fbeee8',
+            secondary: '#2d4a43',
+            'secondary-light': '#edf4f1',
+            accent: '#d4a373',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js CDN pour le Radar des 10 Réservoirs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Styles personnalisés -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-[#fbfaf8] flex flex-col md:flex-row antialiased text-gray-800">
+
+  <!-- Barre latérale / Navigation principale -->
+  <aside class="w-full md:w-72 bg-white border-r border-gray-100 flex flex-col justify-between shrink-0 p-6 no-print shadow-sm">
+    <div class="space-y-6">
+      <!-- En-tête de l'application -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-primary-light flex items-center justify-center text-primary shadow-inner">
+          <i data-lucide="compass" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="font-serif font-bold text-gray-900 text-lg leading-tight">Voie Intérieure</h1>
+          <p class="text-[11px] text-gray-400 font-medium tracking-wide">Méthode Intégrale John Gray</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="space-y-1 text-sm font-medium">
+        <button data-tab-target="dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-primary-light text-primary font-semibold transition-smooth text-left">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Tableau de Bord</span>
+        </button>
+
+        <button data-tab-target="codex" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+          <i data-lucide="book-marked" class="w-4 h-4"></i>
+          <span>Codex du Livre</span>
+        </button>
+
+        <button data-tab-target="tanks" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+          <i data-lucide="heart" class="w-4 h-4"></i>
+          <span>Les 10 Réservoirs</span>
+        </button>
+
+        <button data-tab-target="blocks" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span>Les 12 Blocages</span>
+        </button>
+
+        <button data-tab-target="letters" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+          <i data-lucide="feather" class="w-4 h-4"></i>
+          <span>Lettre des Sentiments</span>
+        </button>
+
+        <button data-tab-target="desires" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+          <i data-lucide="target" class="w-4 h-4"></i>
+          <span>Désirs d'Âme vs Ego</span>
+        </button>
+
+        <button data-tab-target="meditation" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 transition-smooth text-left">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>Méditation & Gratitude</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Pied de barre latérale -->
+    <div class="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500 space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5 text-primary font-bold">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Privé & Local</span>
+        </div>
+        <button 
+          id="export-data-btn" 
+          class="p-1 text-gray-400 hover:text-primary transition-smooth" 
+          title="Exporter une sauvegarde JSON de vos lettres et données"
+        >
+          <i data-lucide="download" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <p class="text-[11px] text-gray-400 leading-relaxed">
+        Basé sur l'ouvrage de référence de John Gray : <em>Comment obtenir ce que nous désirons et apprécier ce que nous possédons</em>.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Contenu Principal -->
+  <main class="flex-1 p-4 sm:p-8 md:p-10 max-w-6xl mx-auto overflow-y-auto">
+
+    <!-- Onglet 1 : Tableau de bord (Dashboard) -->
+    <section data-tab-content="dashboard" class="space-y-8">
+      <!-- Citation inspirante -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-primary-light via-white to-amber-50 border border-amber-100 shadow-sm relative overflow-hidden">
+        <div class="relative z-10 space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-primary/20 text-xs font-semibold text-primary">
+            <i data-lucide="sun" class="w-3.5 h-3.5"></i> Sagesse Quotidienne de John Gray
+          </div>
+          <p id="daily-quote-text" class="font-serif text-lg sm:text-xl md:text-2xl text-gray-900 leading-snug italic">
+            « Le véritable succès consiste à obtenir ce que nous désirons tout en appréciant pleinement ce que nous possédons déjà. »
+          </p>
+          <p id="daily-quote-ref" class="text-xs text-gray-500 font-medium">— John Gray, Principe Fondateur</p>
+        </div>
+      </div>
+
+      <!-- Statistiques d'Harmonie & Accès Rapides -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
+            <span>Harmonie Globale</span>
+            <i data-lucide="activity" class="w-4 h-4 text-primary"></i>
+          </div>
+          <div id="dash-tank-avg" class="text-2xl font-bold font-serif text-gray-900">55%</div>
+          <p class="text-[11px] text-gray-400 mt-1">Moyenne des 10 Réservoirs</p>
+        </div>
+
+        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
+            <span>Réservoir Prioritaire</span>
+            <i data-lucide="alert-circle" class="w-4 h-4 text-amber-500"></i>
+          </div>
+          <div id="dash-lowest-tank" class="text-sm font-bold text-amber-900 truncate">Calcul en cours...</div>
+          <p class="text-[11px] text-gray-400 mt-1">Nécessite votre attention</p>
+        </div>
+
+        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
+            <span>Lettres Rédigées</span>
+            <i data-lucide="mail-check" class="w-4 h-4 text-emerald-600"></i>
+          </div>
+          <div id="dash-letters-count" class="text-2xl font-bold font-serif text-gray-900">0</div>
+          <p class="text-[11px] text-gray-400 mt-1">Blocages libérés</p>
+        </div>
+
+        <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div class="flex items-center justify-between text-gray-500 text-xs font-medium mb-2">
+            <span>Ancrages Gratitude</span>
+            <i data-lucide="heart" class="w-4 h-4 text-rose-500"></i>
+          </div>
+          <div id="dash-gratitude-count" class="text-2xl font-bold font-serif text-gray-900">0</div>
+          <p class="text-[11px] text-gray-400 mt-1">Jours d'appréciation vécus</p>
+        </div>
+      </div>
+
+      <!-- Les Piliers Clés de la Méthode -->
+      <div class="space-y-4">
+        <h3 class="font-serif text-xl font-bold text-gray-900">Accès Rapide aux Enseignements & Outils</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div onclick="switchTab('codex')" class="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm hover:border-amber-200 transition-smooth cursor-pointer space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+            </div>
+            <h4 class="font-bold text-gray-900 text-base">Le Codex du Livre</h4>
+            <p class="text-xs text-gray-500 leading-relaxed">
+              Consultez la synthèse détaillée chapitre par chapitre des enseignements de John Gray.
+            </p>
+          </div>
+
+          <div onclick="switchTab('tanks')" class="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm hover:border-amber-200 transition-smooth cursor-pointer space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-primary-light text-primary flex items-center justify-center">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+            </div>
+            <h4 class="font-bold text-gray-900 text-base">Les 10 Réservoirs</h4>
+            <p class="text-xs text-gray-500 leading-relaxed">
+              Cartographiez vos besoins d'amour sur le diagramme radar et apprenez à les nourrir.
+            </p>
+          </div>
+
+          <div onclick="switchTab('letters')" class="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm hover:border-amber-200 transition-smooth cursor-pointer space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <i data-lucide="feather" class="w-5 h-5"></i>
+            </div>
+            <h4 class="font-bold text-gray-900 text-base">La Lettre des Sentiments</h4>
+            <p class="text-xs text-gray-500 leading-relaxed">
+              L'outil thérapeutique pour traverser colère, tristesse, peur et regret jusqu'au pardon.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Onglet CODEX : Le Guide Complet du Livre -->
+    <section data-tab-content="codex" class="hidden space-y-8">
+      <div>
+        <div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-1">
+          <i data-lucide="book-marked" class="w-4 h-4"></i> Synthèse Conceptuelle & Méthodologique
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Le Codex Intégral de l'Ouvrage</h2>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+          Retrouvez ici la quintessence des 5 grandes parties du livre de John Gray : <em>Comment obtenir ce que nous désirons et apprécier ce que nous possédons</em>.
+        </p>
+      </div>
+
+      <div id="codex-content-container" class="space-y-6">
+        <!-- Rempli dynamiquement par app.js -->
+      </div>
+    </section>
+
+    <!-- Onglet 2 : Les 10 Réservoirs d'Amour -->
+    <section data-tab-content="tanks" class="hidden space-y-8">
+      <div>
+        <div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-1">
+          <i data-lucide="heart" class="w-4 h-4"></i> Diagnostic d'Épanouissement Affectif
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Les 10 Réservoirs d'Amour</h2>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+          John Gray explique que notre cœur possède 10 réservoirs distincts. Lorsqu'un réservoir précis est à sec, nous ressentons un vide et commettons l'erreur d'accabler notre couple ou notre carrière. Ajustez les curseurs ci-dessous pour cartographier vos niveaux actuels.
+        </p>
+      </div>
+
+      <!-- Graphique Radar -->
+      <div class="p-6 sm:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center">
+        <h3 class="font-serif font-bold text-gray-800 text-base mb-2">Cartographie Globale de vos 10 Réservoirs</h3>
+        <div class="w-full max-w-lg h-72 sm:h-80 relative">
+          <canvas id="tanksRadarChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Curseurs d'évaluation des 10 réservoirs -->
+      <div id="tanks-sliders-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rempli dynamiquement par app.js -->
+      </div>
+    </section>
+
+    <!-- Onglet 3 : Les 12 Blocages au Succès -->
+    <section data-tab-content="blocks" class="hidden space-y-8">
+      <div>
+        <div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-1">
+          <i data-lucide="unlock" class="w-4 h-4"></i> Diagnostic Émotionnel & Alchimie
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Les 12 Blocages au Succès Personnel</h2>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+          Lorsque nous sommes piégés dans un état négatif, nous perdons l'accès à notre force créatrice. Sélectionnez un blocage pour découvrir sa blessure d'enfance originelle, la carte de ses sentiments masqués et son antidote.
+        </p>
+      </div>
+
+      <!-- Grille de sélection des 12 blocages -->
+      <div id="blocks-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <!-- Rempli dynamiquement par app.js -->
+      </div>
+
+      <!-- Détails et alchimie du blocage sélectionné -->
+      <div id="selected-block-details">
+        <!-- Rempli dynamiquement par app.js -->
+      </div>
+    </section>
+
+    <!-- Onglet 4 : Studio de la Lettre des Sentiments -->
+    <section data-tab-content="letters" class="hidden space-y-8">
+      <div>
+        <div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-1">
+          <i data-lucide="feather" class="w-4 h-4"></i> L'Outil Thérapeutique Fondamental
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Atelier de la Lettre des Sentiments</h2>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+          Pour guérir une blessure ou dissoudre un ressentiment, John Gray prescrit de traverser les 4 niveaux émotionnels (Colère $\rightarrow$ Tristesse $\rightarrow$ Peur $\rightarrow$ Regret) jusqu'à rouvrir son cœur à l'Amour et s'offrir la Lettre Réponse.
+        </p>
+      </div>
+
+      <!-- Modèles pré-remplis de situation types -->
+      <div class="space-y-3">
+        <h4 class="font-serif font-bold text-gray-900 text-sm flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i> Modèles Rapides (Situations courantes)
+        </h4>
+        <div id="letter-templates-container" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Rempli dynamiquement -->
+        </div>
+      </div>
+
+      <!-- Formulaire de rédaction -->
+      <div class="p-6 sm:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-gray-100">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Destinataire :</label>
+            <input 
+              type="text" 
+              id="letter-recipient" 
+              placeholder="Ex: Mon conjoint, Mon père, Mon associé, Moi-même..." 
+              class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-smooth"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Sujet / Blocage traité :</label>
+            <input 
+              type="text" 
+              id="letter-topic" 
+              placeholder="Ex: Sentiment d'abandon, Conflit financier, Peur de l'échec..." 
+              class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-smooth"
+            />
+          </div>
+        </div>
+
+        <!-- Boutons d'étapes (Pills) -->
+        <div id="letter-step-pills" class="flex flex-wrap gap-2">
+          <!-- Rempli dynamiquement -->
+        </div>
+
+        <!-- Contenu de l'étape active -->
+        <div id="letter-step-content" class="pt-2">
+          <!-- Rempli dynamiquement -->
+        </div>
+      </div>
+
+      <!-- Historique des lettres rédigées -->
+      <div class="space-y-4">
+        <h3 class="font-serif text-xl font-bold text-gray-900">Mes Lettres Enregistrées (Coffre-fort local)</h3>
+        <div id="letters-history-list" class="space-y-3">
+          <!-- Rempli dynamiquement -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Onglet 5 : Désirs d'Âme vs Ego -->
+    <section data-tab-content="desires" class="hidden space-y-8">
+      <div>
+        <div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-1">
+          <i data-lucide="target" class="w-4 h-4"></i> Clarté & Alignement Intérieur
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Désirs de l'Âme vs Désirs de l'Ego</h2>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+          John Gray démontre que vouloir obtenir des succès extérieurs pour combler un manque intérieur mène au surmenage et à l'amertume. Le véritable succès s'épanouit lorsque nos actions soutiennent le désir authentique de notre âme.
+        </p>
+      </div>
+
+      <!-- Outil diagnostique de projet -->
+      <div class="p-6 sm:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-6">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Votre projet, désir ou objectif actuel :</label>
+          <input 
+            type="text" 
+            id="desire-title" 
+            placeholder="Ex: Lancer une nouvelle activité, acheter une maison, trouver l'amour..." 
+            class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-smooth"
+          />
+        </div>
+
+        <div class="space-y-4 pt-2">
+          <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-2">
+            <p class="text-xs font-bold text-gray-800">1. Quelle est l'énergie motrice derrière ce projet ?</p>
+            <div class="space-y-1.5 text-xs text-gray-600">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q1" value="soul" class="accent-primary" />
+                <span>La joie d'apprendre, d'expérimenter et de créer sans pression.</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q1" value="ego" class="accent-primary" />
+                <span>L'angoisse de manquer de sécurité ou le besoin de prouver ma valeur aux autres.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-2">
+            <p class="text-xs font-bold text-gray-800">2. Comment vivez-vous le temps nécessaire à sa réalisation ?</p>
+            <div class="space-y-1.5 text-xs text-gray-600">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q2" value="soul" class="accent-primary" />
+                <span>Je suis serein(e) et patient(e), le processus lui-même me nourrit.</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q2" value="ego" class="accent-primary" />
+                <span>Je suis impatient(e) et stressé(e), je veux le trophée immédiatement.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-2">
+            <p class="text-xs font-bold text-gray-800">3. Si personne ne savait jamais que vous avez réussi :</p>
+            <div class="space-y-1.5 text-xs text-gray-600">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q3" value="soul" class="accent-primary" />
+                <span>J'aurais toujours autant d'enthousiasme pour mon plaisir intime.</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q3" value="ego" class="accent-primary" />
+                <span>Mon intérêt diminuerait fortement sans validation sociale.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-2">
+            <p class="text-xs font-bold text-gray-800">4. Quel est votre ressenti sur votre vie actuelle ?</p>
+            <div class="space-y-1.5 text-xs text-gray-600">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q4" value="soul" class="accent-primary" />
+                <span>Je suis déjà reconnaissant(e) pour ce que j'ai, ce projet est un surplus d'épanouissement.</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="desire_q4" value="ego" class="accent-primary" />
+                <span>Je me sens vide ou frustré(e), je serai heureux(se) seulement après l'avoir obtenu.</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          id="eval-desire-btn" 
+          class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-smooth shadow-sm flex items-center justify-center gap-2"
+        >
+          <i data-lucide="sparkle" class="w-4 h-4"></i> Analyser l'Intention selon John Gray
+        </button>
+
+        <!-- Résultat de l'analyse -->
+        <div id="desire-result-box" class="hidden"></div>
+      </div>
+    </section>
+
+    <!-- Onglet 6 : Méditation du Cœur & Gratitude Quotidienne -->
+    <section data-tab-content="meditation" class="hidden space-y-8">
+      <div>
+        <div class="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-1">
+          <i data-lucide="sparkles" class="w-4 h-4"></i> Rituels de Centrage & d'Appréciation
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif font-bold text-gray-900">Méditation du Cœur & Gratitude Active</h2>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+          Pour John Gray, apprécier ce que l'on possède déjà transforme la chimie cérébrale et attire naturellement l'abondance. La respiration du cœur apaise instantanément le système nerveux.
+        </p>
+      </div>
+
+      <!-- Guide Interactif de Méditation du Coeur -->
+      <div class="p-8 sm:p-10 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center text-center space-y-6">
+        <div class="max-w-md space-y-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-primary">Cohérence Cardiaque & Présence</span>
+          <h3 class="font-serif text-2xl font-bold text-gray-900">Respiration dans l'Espace du Cœur</h3>
+          <p class="text-xs text-gray-500">Posez une main sur votre poitrine. Laissez votre souffle circuler avec douceur au rythme du cercle ci-dessous.</p>
+        </div>
+
+        <!-- Cercle de respiration animé -->
+        <div class="relative w-52 h-52 flex items-center justify-center my-4">
+          <div id="med-breathing-circle" class="w-40 h-40 rounded-full bg-gradient-to-tr from-primary/30 to-amber-200/50 border-2 border-primary/40 flex items-center justify-center transition-smooth">
+            <i data-lucide="heart" class="w-12 h-12 text-primary"></i>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div id="med-breathing-phase" class="text-sm font-semibold text-gray-800 h-6">
+            Préparez-vous à respirer dans votre cœur
+          </div>
+          <div id="med-timer-display" class="font-serif text-3xl font-bold text-primary">
+            05:00
+          </div>
+        </div>
+
+        <!-- Sélecteur de durée & Contrôles -->
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <button onclick="setMeditationDuration(180)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-smooth">3 min</button>
+          <button onclick="setMeditationDuration(300)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary-light text-primary font-bold transition-smooth">5 min</button>
+          <button onclick="setMeditationDuration(600)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-smooth">10 min</button>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button 
+            id="med-start-btn" 
+            class="px-6 py-3 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-smooth shadow-sm flex items-center gap-2"
+          >
+            <i data-lucide="play" class="w-4 h-4"></i> Démarrer la Méditation
+          </button>
+          <button 
+            id="med-reset-btn" 
+            class="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 transition-smooth"
+          >
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- Journal Quotidien d'Appréciation ("Vouloir ce que l'on a") -->
+      <div class="p-6 sm:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm space-y-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-primary">Pratique Quotidienne</span>
+          <h3 class="font-serif text-xl font-bold text-gray-900 mt-1">Le Rituel d'Appréciation (« Vouloir ce que je possède »)</h3>
+          <p class="text-xs text-gray-500 mt-1">
+            Chaque jour, ancrez 3 éléments de votre vie actuelle que vous choisissez de chérir pleinement.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">1. Ce que je possède aujourd'hui et dont je mesure la grâce :</label>
+            <input type="text" id="gratitude-1" placeholder="Ex: Mon corps en bonne santé, un toit paisible, un être cher..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-gray-200 focus:border-primary outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">2. Une petite joie simple vécue récemment :</label>
+            <input type="text" id="gratitude-2" placeholder="Ex: La saveur d'un café chaud, un fou rire, une promenade..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-gray-200 focus:border-primary outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">3. Une fierté personnelle ou un progrès intérieur :</label>
+            <input type="text" id="gratitude-3" placeholder="Ex: Avoir écouté mes limites, avoir pardonné..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-gray-200 focus:border-primary outline-none" />
+          </div>
+        </div>
+
+        <button 
+          id="save-gratitude-btn" 
+          class="px-5 py-2.5 bg-secondary text-white rounded-xl text-xs font-bold hover:bg-secondary/90 transition-smooth shadow-sm flex items-center gap-2"
+        >
+          <i data-lucide="check" class="w-4 h-4"></i> Enregistrer mes Gratitudes du Jour
+        </button>
+
+        <div class="space-y-3 pt-4 border-t border-gray-100">
+          <h4 class="font-serif font-bold text-gray-900 text-sm">Historique de mes Ancrages</h4>
+          <div id="gratitude-history-list" class="space-y-2">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal pour Afficher / Imprimer une Lettre des Sentiments -->
+  <div id="letter-view-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-xl overflow-hidden my-8 max-h-[90vh] overflow-y-auto">
+      <div id="letter-modal-content">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Logique de l'application -->
+  <script src="app.js"></script>
+</body>
+</html>
